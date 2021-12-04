@@ -50,6 +50,11 @@ namespace identity_server
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.Use((context, next) =>
+            {
+                context.Request.Scheme = "https";
+                return next();
+            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
