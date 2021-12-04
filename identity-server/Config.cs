@@ -49,6 +49,30 @@ namespace identity_server
                         "defaultApi",
                         "roles"
                     }
+                },
+                new Client{
+                    ClientId = "default3Client",
+                    ClientName = "MVC Web Client",
+                    AllowedGrantTypes = GrantTypes.Hybrid,
+                    RequirePkce = false,
+                    AllowRememberConsent = false,
+                    RedirectUris = new List<string>(){
+                        "https://localhost:5003/signin-oidc"
+                    },
+                    PostLogoutRedirectUris = new List<string>(){
+                        "https://localhost:5003/signout-callback-oidc"
+                    },
+                    ClientSecrets = new List<Secret>{
+                        new Secret("secret".Sha256())
+                    },
+                    AllowedScopes = new List<string>{
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        "defaultApi",
+                        "roles"
+                    }
                 }
             };
 
