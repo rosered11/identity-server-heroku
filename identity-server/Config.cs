@@ -11,7 +11,7 @@ namespace identity_server
 {
     public class Config
     {
-        public static IEnumerable<Client> Clients =>
+        public static IEnumerable<Client> Clients(IConfiguration config) =>
             new Client[]
             {
                 // Machine to Machine
@@ -32,11 +32,12 @@ namespace identity_server
                     AllowRememberConsent = false,
                     RedirectUris = new List<string>(){
                         // "https://localhost:5003/signin-oidc"
-                        "com.example.asm_managements:/"
+                        
+                        config.GetValue<string>("Mobile:Redirect")
                     },
                     PostLogoutRedirectUris = new List<string>(){
                         // "https://localhost:5003/signout-callback-oidc"
-                        "com.example.asm_managements:/"
+                        config.GetValue<string>("Mobile:Redirect")
                     },
                     ClientSecrets = new List<Secret>{
                         new Secret("secret".Sha256())

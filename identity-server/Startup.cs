@@ -33,7 +33,7 @@ namespace identity_server
             var key = Convert.FromBase64String(raw);
             var cert = new X509Certificate2(key);
             services.AddIdentityServer()
-                .AddInMemoryClients(Config.Clients)
+                .AddInMemoryClients(Config.Clients(Configuration))
                 .AddInMemoryIdentityResources(Config.IdentityResources)
                 .AddInMemoryApiScopes(Config.ApiScopes)
                 .AddTestUsers(Config.TestUsers(Configuration))
