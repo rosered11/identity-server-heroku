@@ -31,10 +31,12 @@ namespace identity_server
                     RequirePkce = false,
                     AllowRememberConsent = false,
                     RedirectUris = new List<string>(){
-                        "https://localhost:5003/signin-oidc"
+                        // "https://localhost:5003/signin-oidc"
+                        "com.example.asm_managements:/"
                     },
                     PostLogoutRedirectUris = new List<string>(){
-                        "https://localhost:5003/signout-callback-oidc"
+                        // "https://localhost:5003/signout-callback-oidc"
+                        "com.example.asm_managements:/"
                     },
                     ClientSecrets = new List<Secret>{
                         new Secret("secret".Sha256())
