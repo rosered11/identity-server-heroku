@@ -50,7 +50,7 @@ namespace identity_server
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
