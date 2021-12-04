@@ -50,6 +50,8 @@ namespace identity_server
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Setup for rediret_url while call to authen server via https
             app.Use((context, next) =>
             {
                 context.Request.Scheme = "https";
