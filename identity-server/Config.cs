@@ -27,7 +27,7 @@ namespace identity_server
                 new Client{
                     ClientId = "flutterClient",
                     ClientName = "Flutter Client",
-                    AllowedGrantTypes = GrantTypes.Hybrid,
+                    AllowedGrantTypes = new List<string> { GrantType.AuthorizationCode },
                     AllowRememberConsent = false,
                     RequirePkce = false,
                     RequireClientSecret = false,
