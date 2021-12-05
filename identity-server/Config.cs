@@ -25,22 +25,14 @@ namespace identity_server
                 },
                 // OpenId for authen user, and Oauth2 authen protect resource
                 new Client{
-                    ClientId = "default2Client",
-                    ClientName = "MVC Client",
+                    ClientId = "flutterClient",
+                    ClientName = "Flutter Client",
                     AllowedGrantTypes = GrantTypes.Hybrid,
-                    RequirePkce = false,
                     AllowRememberConsent = false,
+                    RequirePkce = false,
+                    RequireClientSecret = false,
                     RedirectUris = new List<string>(){
-                        // "https://localhost:5003/signin-oidc"
-                        
                         config.GetValue<string>("Mobile:Redirect")
-                    },
-                    PostLogoutRedirectUris = new List<string>(){
-                        // "https://localhost:5003/signout-callback-oidc"
-                        config.GetValue<string>("Mobile:Redirect")
-                    },
-                    ClientSecrets = new List<Secret>{
-                        new Secret("secret".Sha256())
                     },
                     AllowedScopes = new List<string>{
                         IdentityServerConstants.StandardScopes.OpenId,
