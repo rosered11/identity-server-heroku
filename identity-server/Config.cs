@@ -37,16 +37,16 @@ namespace identity_server
                 },
                 new Client{
                     ClientId = "defaultClient",
+                    
+                    // These grant types the client credentials cann't get user profile,
+                    // If you need to userinfo from use login
+                    // You should choose openid flow
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
 
                     ClientSecrets = {
                         new Secret("secret".Sha256())
                     },
                     AllowedScopes = {
-                        // If conn't set these scope, it will cann't get userinfo
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-
                         "defaultApi" 
                     }
                 },
