@@ -17,11 +17,12 @@ namespace identity_server
                 // Machine to Machine
                 new Client{
                     ClientId = "defaultClient",
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    //AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    AllowedGrantTypes = new List<string> { GrantType.AuthorizationCode },
 
                     // If not set will be error 'Code challenge required'
                     RequirePkce = false,
-                    
+
                     ClientSecrets = {
                         new Secret("secret".Sha256())
                     },
