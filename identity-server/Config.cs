@@ -43,6 +43,10 @@ namespace identity_server
                         new Secret("secret".Sha256())
                     },
                     AllowedScopes = {
+                        // If conn't set these scope, it will cann't get userinfo
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+
                         "defaultApi" 
                     }
                 },
