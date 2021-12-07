@@ -16,7 +16,7 @@ namespace identity_server
             {
                 // Machine to Machine
                 new Client{
-                    ClientId = "defaultClient",
+                    ClientId = "defaultClientOpenId",
                     //AllowedGrantTypes = GrantTypes.ClientCredentials,
                     AllowedGrantTypes = new List<string> { GrantType.AuthorizationCode },
 
@@ -35,6 +35,18 @@ namespace identity_server
                         "defaultApi" 
                     }
                 },
+                new Client{
+                    ClientId = "defaultClient",
+                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+
+                    ClientSecrets = {
+                        new Secret("secret".Sha256())
+                    },
+                    AllowedScopes = {
+                        "defaultApi" 
+                    }
+                },
+
                 // OpenId for authen user, and Oauth2 authen protect resource
                 new Client{
                     ClientId = "flutterClient",
