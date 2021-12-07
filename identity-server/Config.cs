@@ -21,6 +21,9 @@ namespace identity_server
                     ClientSecrets = {
                         new Secret("secret".Sha256())
                     },
+                    RedirectUris = new List<string>(){
+                        config.GetValue<string>("Api:Redirect")
+                    },
                     AllowedScopes = { "defaultApi" }
                 },
                 // OpenId for authen user, and Oauth2 authen protect resource
