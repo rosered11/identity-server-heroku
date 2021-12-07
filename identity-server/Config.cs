@@ -24,7 +24,11 @@ namespace identity_server
                     RedirectUris = new List<string>(){
                         config.GetValue<string>("Api:Redirect")
                     },
-                    AllowedScopes = { "defaultApi" }
+                    AllowedScopes = { 
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "defaultApi" 
+                    }
                 },
                 // OpenId for authen user, and Oauth2 authen protect resource
                 new Client{
