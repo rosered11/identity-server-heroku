@@ -18,6 +18,10 @@ namespace identity_server
                 new Client{
                     ClientId = "defaultClient",
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
+
+                    // If not set will be error 'Code challenge required'
+                    RequirePkce = false,
+                    
                     ClientSecrets = {
                         new Secret("secret".Sha256())
                     },
