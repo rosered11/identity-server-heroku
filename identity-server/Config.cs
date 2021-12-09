@@ -24,7 +24,7 @@ namespace identity_server
                     RequirePkce = false,
 
                     ClientSecrets = {
-                        new Secret("secret".Sha256())
+                        new Secret(config.GetValue<string>("Api:Secret").Sha256())
                     },
                     RedirectUris = new List<string>(){
                         config.GetValue<string>("Api:Redirect")
@@ -44,7 +44,7 @@ namespace identity_server
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
 
                     ClientSecrets = {
-                        new Secret("secret".Sha256())
+                        new Secret(config.GetValue<string>("Api:Secret").Sha256())
                     },
                     AllowedScopes = {
                         "defaultApi" 
@@ -84,7 +84,7 @@ namespace identity_server
                         "https://localhost:5003/signout-callback-oidc"
                     },
                     ClientSecrets = new List<Secret>{
-                        new Secret("secret".Sha256())
+                        new Secret(config.GetValue<string>("Mvc:Secret").Sha256())
                     },
                     AllowedScopes = new List<string>{
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -128,28 +128,28 @@ namespace identity_server
             new List<TestUser>
             {
                 new TestUser{
-                    SubjectId = Guid.NewGuid().ToString(),
+                    SubjectId = "4DEE5D0B-2A9C-479A-9D77-8672A5A193A4",
                     Username = config.GetValue<string>("Rosered:User"),
                     Password = config.GetValue<string>("Rosered:Pass"),
                     Claims = new List<Claim>{
-                        new Claim(JwtClaimTypes.Name, "ice it"),
-                        new Claim(JwtClaimTypes.GivenName, "ice"),
-                        new Claim(JwtClaimTypes.FamilyName, "it"),
-                        new Claim(JwtClaimTypes.Email, "ice@ice.ice"),
+                        new Claim(JwtClaimTypes.Name, "rosered strauss"),
+                        new Claim(JwtClaimTypes.GivenName, "rosered"),
+                        new Claim(JwtClaimTypes.FamilyName, "strauss"),
+                        new Claim(JwtClaimTypes.Email, "demo@demo.test"),
                         new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
-                        new Claim(JwtClaimTypes.WebSite, "http://ice.ice"),
+                        new Claim(JwtClaimTypes.WebSite, "http://demo.demo"),
                         new Claim(JwtClaimTypes.Address, "my address"),
                         new Claim(JwtClaimTypes.Role, "user")
                     }
                 },
                 new TestUser{
-                    SubjectId = Guid.NewGuid().ToString(),
+                    SubjectId = "5F82AF0D-7ACB-4656-9A04-04B7838A59EF",
                     Username = config.GetValue<string>("Maruko:User"),
                     Password = config.GetValue<string>("Maruko:Pass"),
                     Claims = new List<Claim>{
-                        new Claim(JwtClaimTypes.Name, "maruko it"),
+                        new Claim(JwtClaimTypes.Name, "maruko arlale"),
                         new Claim(JwtClaimTypes.GivenName, "maruko"),
-                        new Claim(JwtClaimTypes.FamilyName, "it"),
+                        new Claim(JwtClaimTypes.FamilyName, "arlale"),
                         new Claim(JwtClaimTypes.Email, "maruko@maruko.maruko"),
                         new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
                         new Claim(JwtClaimTypes.WebSite, "http://maruko.maruko"),
