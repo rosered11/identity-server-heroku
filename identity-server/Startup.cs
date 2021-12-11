@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
-namespace identity_server
+namespace IdentityServer
 {
     public class Startup
     {
@@ -34,8 +34,7 @@ namespace identity_server
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             string raw = Configuration.GetValue<string>("Identity:Key");
-            var key = Convert.FromBase64String(raw);
-            var cert = new X509Certificate2(key);
+
             services.AddIdentityServer()
                 // .AddInMemoryClients(Config.Clients(Configuration))
                 // .AddInMemoryIdentityResources(Config.IdentityResources)
@@ -43,15 +42,15 @@ namespace identity_server
                 .AddTestUsers(Config.TestUsers(Configuration))
                 .AddConfigurationStore(options =>
                 {
-                    options.ConfigureDbContext = b => b.UseNpgsql("asd",
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Identity:Key"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddOperationalStore(options =>
                 {
-                    options.ConfigureDbContext = b => b.UseNpgsql("asd",
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Identity:Key"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddSigningCredential(cert)
+                .AddSigningCredential(new X509Certificate2(Convert.FromBase64String(raw)))
                 ;
 
             services.AddControllersWithViews();
@@ -60,6 +59,8 @@ namespace identity_server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // InitialDatabase and seed data
+            Config.InitialDatabase(app);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

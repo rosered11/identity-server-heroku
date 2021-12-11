@@ -1,17 +1,68 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using IdentityModel;
 using IdentityServer4;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace identity_server
+namespace IdentityServer
 {
     public class Config
     {
-        public static IEnumerable<Client> Clients(IConfiguration config) =>
+        public static void InitialDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                context.Database.Migrate();
+
+                if(!context.Clients.Any())
+                {
+                    foreach(var client in Config.Clients()){
+                        context.Clients.Add(client.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if(!context.IdentityResources.Any())
+                {
+                    foreach(var resource in Config.IdentityResources)
+                    {
+                        context.IdentityResources.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if(!context.ApiScopes.Any())
+                {
+                    foreach(var scope in Config.ApiScopes)
+                    {
+                        context.ApiScopes.Add(scope.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                // if(!context.ApiResources.Any())
+                // {
+                //     foreach(var resource in Config.ApiResources)
+                //     {
+                //         context.ApiResources.Add(resource.ToEntity());
+                //     }
+                //     context.SaveChanges();
+                // }
+            }
+        }
+        public static IEnumerable<Client> Clients() =>
             new Client[]
             {
                 // Machine to Machine
@@ -24,10 +75,10 @@ namespace identity_server
                     RequirePkce = false,
 
                     ClientSecrets = {
-                        new Secret(config.GetValue<string>("Api:Secret").Sha256())
+                        new Secret("Api:Secret".Sha256())
                     },
                     RedirectUris = new List<string>(){
-                        config.GetValue<string>("Api:Redirect")
+                        "Api:Redirect"
                     },
                     AllowedScopes = { 
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -44,7 +95,7 @@ namespace identity_server
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
 
                     ClientSecrets = {
-                        new Secret(config.GetValue<string>("Api:Secret").Sha256())
+                        new Secret("Api:Secret".Sha256())
                     },
                     AllowedScopes = {
                         "defaultApi" 
@@ -60,7 +111,7 @@ namespace identity_server
                     RequirePkce = false,
                     RequireClientSecret = false,
                     RedirectUris = new List<string>(){
-                        config.GetValue<string>("Mobile:Redirect")
+                        "Mobile:Redirect"
                     },
                     AllowedScopes = new List<string>{
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -84,7 +135,7 @@ namespace identity_server
                         "https://localhost:5003/signout-callback-oidc"
                     },
                     ClientSecrets = new List<Secret>{
-                        new Secret(config.GetValue<string>("Mvc:Secret").Sha256())
+                        new Secret("Mvc:Secret".Sha256())
                     },
                     AllowedScopes = new List<string>{
                         IdentityServerConstants.StandardScopes.OpenId,
