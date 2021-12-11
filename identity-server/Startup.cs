@@ -42,12 +42,12 @@ namespace IdentityServer
                 .AddTestUsers(Config.TestUsers(Configuration))
                 .AddConfigurationStore(options =>
                 {
-                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Identity:Key"),
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("DATABASE_URL"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddOperationalStore(options =>
                 {
-                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Identity:Key"),
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("DATABASE_URL"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddSigningCredential(new X509Certificate2(Convert.FromBase64String(raw)))
