@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -9,12 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
-namespace identity_server
+namespace IdentityServer
 {
     public class Startup
     {
@@ -29,15 +31,26 @@ namespace identity_server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
             string raw = Configuration.GetValue<string>("Identity:Key");
-            var key = Convert.FromBase64String(raw);
-            var cert = new X509Certificate2(key);
+
             services.AddIdentityServer()
-                .AddInMemoryClients(Config.Clients(Configuration))
-                .AddInMemoryIdentityResources(Config.IdentityResources)
-                .AddInMemoryApiScopes(Config.ApiScopes)
+                // .AddInMemoryClients(Config.Clients(Configuration))
+                // .AddInMemoryIdentityResources(Config.IdentityResources)
+                // .AddInMemoryApiScopes(Config.ApiScopes)
                 .AddTestUsers(Config.TestUsers(Configuration))
-                .AddSigningCredential(cert)
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("DATABASE_URL"),
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("DATABASE_URL"),
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                .AddSigningCredential(new X509Certificate2(Convert.FromBase64String(raw)))
                 ;
 
             services.AddControllersWithViews();
@@ -46,6 +59,8 @@ namespace identity_server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // InitialDatabase and seed data
+            Config.InitialDatabase(app);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

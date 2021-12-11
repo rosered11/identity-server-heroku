@@ -453,4 +453,9 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 .vscode
-id4.*
+
+## Certifacate
+*.base64
+*.crt
+*.key
+*.pfx
