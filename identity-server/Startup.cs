@@ -69,7 +69,7 @@ namespace IdentityServer
                     options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Database_Connection"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddSigningCredential(new X509Certificate2("id4v2.pfx"))
+                .AddSigningCredential(new X509Certificate2(Convert.FromBase64String(raw)))
                 ;
 
             // Services
