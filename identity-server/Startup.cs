@@ -53,7 +53,11 @@ namespace IdentityServer
             
             string raw = Configuration.GetValue<string>("Identity:Key");
 
-            services.AddIdentityServer()
+            services.AddIdentityServer(options => {
+                options.Events.RaiseSuccessEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseErrorEvents = true;
+            })
                 // .AddInMemoryClients(Config.Clients(Configuration))
                 // .AddInMemoryIdentityResources(Config.IdentityResources)
                 // .AddInMemoryApiScopes(Config.ApiScopes)
