@@ -7,9 +7,12 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityServer.Database;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,15 +34,31 @@ namespace IdentityServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(Configuration.GetValue<string>("Database_Connection")));
 
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+                    options.Password = new PasswordOptions {
+                        RequireDigit = false,
+                        RequiredLength = 4,
+                        RequireLowercase = false,
+                        RequireUppercase = false,
+                        RequireNonAlphanumeric = false
+                    };
+                })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            
             string raw = Configuration.GetValue<string>("Identity:Key");
 
             services.AddIdentityServer()
                 // .AddInMemoryClients(Config.Clients(Configuration))
                 // .AddInMemoryIdentityResources(Config.IdentityResources)
                 // .AddInMemoryApiScopes(Config.ApiScopes)
-                .AddTestUsers(Config.TestUsers(Configuration))
+                //.AddTestUsers(Config.TestUsers(Configuration))
+                .AddAspNetIdentity<ApplicationUser>()
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Database_Connection"),
@@ -50,8 +69,12 @@ namespace IdentityServer
                     options.ConfigureDbContext = b => b.UseNpgsql(Configuration.GetValue<string>("Database_Connection"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddSigningCredential(new X509Certificate2(Convert.FromBase64String(raw)))
+                .AddSigningCredential(new X509Certificate2("id4v2.pfx"))
                 ;
+
+            // Services
+
+            services.AddScoped<AccountService>();
 
             services.AddControllersWithViews();
         }

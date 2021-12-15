@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "identity_server": {
+    "IdentityServer": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
