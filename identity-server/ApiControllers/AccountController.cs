@@ -22,5 +22,12 @@ namespace IdentityServer.ApiControllers
             }
             return NoContent();
         }
+
+        [HttpPost("Delete")]
+        public async Task<IActionResult> Delete([FromBody] RemoveUserRequest request)
+        {
+            await _accountService.Delete(request.Username, request.Provider);
+            return NoContent();
+        }
     }
 }

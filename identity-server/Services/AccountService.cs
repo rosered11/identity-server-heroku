@@ -22,11 +22,8 @@ namespace IdentityServer
         public async Task<IdentityResult> Create(UserRequest user)
         {
             var oldUser = await _userManager.FindByNameAsync(user.Username);
-            if(oldUser != null){
-                await _userManager.DeleteAsync(oldUser);
-                // var oldClaims = await _userManager.GetClaimsAsync(oldUser);
-                // await _userManager.RemoveClaimsAsync(oldUser, oldClaims);
-            }
+            await Delete(user.Username);
+            
             var applicationUser = new ApplicationUser{ UserName = user.Username, Email = $"{user.FirstName}@demo.test", Name = $"{user.FirstName} {user.LastName}"  };
             var result = await _userManager.CreateAsync(applicationUser, user.Password);
 
@@ -56,6 +53,24 @@ namespace IdentityServer
             }
 
             return result;
+        }
+
+        public async Task Delete(string username, string provider = null)
+        {
+            ApplicationUser currentUser;
+            if (provider == null)
+            {
+                currentUser = await _userManager.FindByNameAsync(username);
+            }
+            else
+            {
+                currentUser = await _userManager.FindByNameAsync($"{provider}_{username}");
+            }
+
+            if(currentUser != null)
+            {
+                await _userManager.DeleteAsync(currentUser);
+            }
         }
     }
 }
