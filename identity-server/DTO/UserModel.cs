@@ -10,4 +10,10 @@ namespace IdentityServer
         public string Username { get; set; }
         public IEnumerable<string> Roles { get; set; }
     }
+
+    public class RemoveUserRequest
+    {
+        public string Username {get; set;}
+        public string Provider {get; set;}
+    }
 }

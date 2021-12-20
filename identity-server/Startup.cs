@@ -6,9 +6,11 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 using IdentityServer.Database;
-using IdentityServer4.Models;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer
 {
@@ -77,8 +78,50 @@ namespace IdentityServer
                 ;
 
             // Services
-
             services.AddScoped<AccountService>();
+
+            // External login
+            services.AddAuthentication(options => {
+                options.DefaultScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.DefaultChallengeScheme = "Github";
+                //options.DefaultSignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            })
+            //.AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme)
+            .AddOAuth("Github", options => {
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.ClientId = Configuration.GetValue<string>("Github:ClientId");
+                options.ClientSecret = Configuration.GetValue<string>("Github:SecretId");
+                options.CallbackPath = new PathString(Configuration.GetValue<string>("Github:Callback"));
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.UserInformationEndpoint = "https://api.github.com/user";
+                options.SaveTokens = true;
+
+                options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+                options.ClaimActions.MapJsonKey("urn:github:login", "login");
+                options.ClaimActions.MapJsonKey("urn:github:url", "html_url");
+                options.ClaimActions.MapJsonKey("urn:github:avatar", "avatar_url");
+
+                options.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+
+                        var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                        response.EnsureSuccessStatusCode();
+
+                        var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+                        context.RunClaimActions(user.RootElement);
+                    }
+                };
+            })
+            ;
 
             services.AddControllersWithViews();
         }
@@ -103,6 +146,7 @@ namespace IdentityServer
             app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
