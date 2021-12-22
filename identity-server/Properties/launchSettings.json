@@ -19,16 +19,18 @@
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5001",
+      "applicationUrl": "https://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Rosered__User": "ice",
-        "Rosered__Pass": "pass",
-        "Maruko__User": "mar",
-        "Maruko__Pass": "pass",
         "Identity__Key": "1234",
-        "Api__Secret": "secret",
-        "Mvc__Secret": "secret"
+        "Database_Connection": "connections string",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "/path/mock.crt",
+        "ASPNETCORE_Kestrel__Certificates__Default__KeyPath": "/path/mock.key",
+        "Github__ClientId": "mock",
+        "Github__ClientSecret": "mock",
+        "Github__Callback": "/signin-github",
+        "Facebook__AppId": "mock",
+        "Facebook__AppSecret": "mock"
       }
     }
   }
