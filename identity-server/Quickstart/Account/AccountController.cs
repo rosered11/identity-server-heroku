@@ -38,6 +38,7 @@ namespace IdentityServerHost.Quickstart.UI
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signinManager;
 
         public AccountController(
             IIdentityServerInteractionService interaction,
@@ -45,6 +46,7 @@ namespace IdentityServerHost.Quickstart.UI
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
             UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signinManager,
             TestUserStore users = null)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
@@ -56,6 +58,7 @@ namespace IdentityServerHost.Quickstart.UI
             _schemeProvider = schemeProvider;
             _events = events;
             _userManager = userManager;
+            _signinManager = signinManager;
         }
 
         /// <summary>
@@ -214,7 +217,8 @@ namespace IdentityServerHost.Quickstart.UI
             if (User?.Identity.IsAuthenticated == true)
             {
                 // delete local authentication cookie
-                await HttpContext.SignOutAsync();
+                //await HttpContext.SignOutAsync();
+                await _signinManager.SignOutAsync();
 
                 // raise the logout event
                 await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
