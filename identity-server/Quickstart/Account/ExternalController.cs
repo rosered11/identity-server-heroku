@@ -105,7 +105,7 @@ namespace IdentityServerHost.Quickstart.UI
             }
 
             // 
-            /*----------- I can't use this scopes ---------------*/
+            /*----------- I can't use this scopes with id4 ---------------*/
             // var info = await _signInManager.GetExternalLoginInfoAsync();
             // // Sign in the user with external
             // var resultSigin = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
@@ -124,6 +124,40 @@ namespace IdentityServerHost.Quickstart.UI
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
                 user = await AutoProvisionUser(provider, providerUserId, claims);
+            }
+
+            // Sync claim from external provider
+            IReadOnlyDictionary<string, string> claimsSync = new Dictionary<string, string>(){
+                { JwtClaimTypes.Name, "Unknow"}
+            };
+            if (claimsSync.Count > 0)
+            {
+                //bool refreshSignIn = false;
+                var userClaims = await _userManager.GetClaimsAsync(user);
+                foreach(var addClaims in claimsSync)
+                {
+                    var syncClaim = userClaims.FirstOrDefault(x => x.Type == addClaims.Key);
+                    if (GetClaimFollowProvider(result, provider) != null)
+                    {
+                        var externalClaim = GetClaimFollowProvider(result, provider);
+                        if (syncClaim == null)
+                        {
+                            await _userManager.AddClaimAsync(user, new Claim(addClaims.Key, externalClaim.Value));
+                            //refreshSignIn = true;
+                        }
+                        else if (syncClaim.Value != externalClaim.Value)
+                        {
+                            await _userManager.ReplaceClaimAsync(user, syncClaim, externalClaim);
+                            //refreshSignIn = true;
+                        }
+                    }
+                    else
+                    {
+                        // Set default value, if external provider don't has the claim
+                        await _userManager.AddClaimAsync(user, new Claim(addClaims.Key, addClaims.Value));
+                        //refreshSignIn = true;
+                    }
+                }
             }
 
             // this allows us to collect any additional claims or properties
@@ -166,6 +200,18 @@ namespace IdentityServerHost.Quickstart.UI
             return Redirect(returnUrl);
         }
 
+        private Claim GetClaimFollowProvider(AuthenticateResult result, string provider)
+        {
+            if (provider == "Facebook")
+            {
+                return result.Principal.FindFirst(ClaimTypes.Name);
+            }
+            else
+            {
+                return result.Principal.FindFirst(JwtClaimTypes.Name);
+            }
+        }
+
         private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)> FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
@@ -194,12 +240,12 @@ namespace IdentityServerHost.Quickstart.UI
         {
             //var info = await _signInManager.GetExternalLoginInfoAsync();
             var name = claims.First(x => x.Type == ClaimTypes.Name);
-            var user = new ApplicationUser{ UserName = $"{provider}_{providerUserId}", Email = $"{provider}_{providerUserId}@demo.test", Name = $"{name}"  };
+            var user = new ApplicationUser{ UserName = $"{provider}_{providerUserId}", Email = $"{provider}_{providerUserId}@demo.test", Name = $"{name.Value}"  };
             var result = await _userManager.CreateAsync(user);
             if (result.Succeeded) 
             {
+                // Add static claims
                 var newClaims = new List<Claim>{
-                        new Claim(JwtClaimTypes.Name, user.Name),
                         new Claim(JwtClaimTypes.Email, user.Email),
                         new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
                         new Claim(JwtClaimTypes.WebSite, "http://demo.demo"),
@@ -212,13 +258,6 @@ namespace IdentityServerHost.Quickstart.UI
                 newClaims.Add(new Claim(JwtClaimTypes.Role, "user"));
                 await _userManager.AddToRolesAsync(user, new[]{ "user" });
                 await _userManager.AddClaimsAsync(user, newClaims);
-
-                //result = await _userManager.AddLoginAsync(user, info);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    //await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-                }
             }
 
             //var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());

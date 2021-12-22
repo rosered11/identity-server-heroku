@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using IdentityModel;
 using IdentityServer.Database;
 using IdentityServer4;
 using Microsoft.AspNetCore.Authentication;
@@ -79,24 +80,24 @@ namespace IdentityServer
             services.AddScoped<AccountService>();
 
             // External login
-            services.AddAuthentication(options => {
-                options.DefaultScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                options.DefaultChallengeScheme = "Github";
-                //options.DefaultSignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            services.AddAuthentication()
+            .AddFacebook(options =>{
+                options.AppId = Configuration.GetValue<string>("Facebook:AppId");
+                options.AppSecret = Configuration.GetValue<string>("Facebook:AppSecret");
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
             })
-            //.AddCookie(IdentityServerConstants.ExternalCookieAuthenticationScheme)
             .AddOAuth("Github", options => {
                 options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                 options.ClientId = Configuration.GetValue<string>("Github:ClientId");
-                options.ClientSecret = Configuration.GetValue<string>("Github:SecretId");
+                options.ClientSecret = Configuration.GetValue<string>("Github:ClientSecret");
                 options.CallbackPath = new PathString(Configuration.GetValue<string>("Github:Callback"));
                 options.TokenEndpoint = "https://github.com/login/oauth/access_token";
                 options.UserInformationEndpoint = "https://api.github.com/user";
                 options.SaveTokens = true;
 
                 options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-                options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                options.ClaimActions.MapJsonKey(JwtClaimTypes.Name, "name");
                 options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
                 options.ClaimActions.MapJsonKey("urn:github:login", "login");
                 options.ClaimActions.MapJsonKey("urn:github:url", "html_url");
@@ -144,7 +145,6 @@ namespace IdentityServer
             app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
-            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
