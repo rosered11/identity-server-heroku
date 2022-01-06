@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Text.Json;
 using IdentityModel;
 using IdentityServer.Database;
 using IdentityServer4;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityServer
 {
@@ -121,6 +124,15 @@ namespace IdentityServer
                 };
             })
             ;
+
+            services.AddSingleton<ICorsPolicyService>((container) => {
+                List<string> origins = new List<string>(Configuration.GetValue<string>("AllowOrigin").Split(','));
+                var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
+                return new DefaultCorsPolicyService(logger)
+                {
+                    AllowedOrigins = origins
+                };
+            });
 
             services.AddControllersWithViews();
         }
